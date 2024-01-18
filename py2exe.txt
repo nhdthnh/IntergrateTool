@@ -1,0 +1,1 @@
+pyinstaller --windowed --onefile --icon="logo.png" --name="USS KIT" GUI.py

@@ -1,0 +1,24 @@
+* Current main_folder_path: \\bosch.com\dfsRB\DfsVN\LOC\Hc\RBVH\20_EDA\10_EDA9\01_Internal\10_Tool\00_ToolChain_Template
+
+* Format folder_path/file for opening URL: 
+    - Put url in .txt file named: 'README.txt'.
+    - Format (format 1 URL):            'Please follow wiki link: url'
+
+    - Format (format more than 1 URL):  'Please follow wiki link: url_1' 
+                                        'Please follow wiki link: url_2'
+                                        ...
+                                        'Please follow wiki link: url_n'
+
+    - Format folder_path: main_folder_path\tool_folder_name\README.txt (Don't modify path of README.txt like main_folder_path\tool_folder_name\folder\README.txt)
+
+* Format folder_path/file for opening file: 
+    - Format: main_folder_path\tool_folder_name\User\Username\file_name.exe (Folder name Username will be created when user first time open USS KIT, Username is Username of user's computer)
+
+* Format folder_path/file for opening folder:
+    - Format: main_folder_path\tool_folder_name (folder named tool_folder_name will be opened)
+
+* Log file will be updated when user close the USS KIT
+    - Log file path: main_folder_path\Log\sys.txt
+
+* Use the script below to generate .py to .exe file:
+=> pyinstaller --windowed --onefile --icon="logo.png" --name="USS KIT" GUI.py
