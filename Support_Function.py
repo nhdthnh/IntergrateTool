@@ -6,6 +6,7 @@ import time
 from pywinauto import Application
 
 # Function opening link
+
 def open_link(PATH, progress_bar, message_label):
     button_name = PATH.split('\\')[-2].split('.')[-1]
     progress_bar.start()
@@ -112,8 +113,8 @@ def open_file(folder_path, file_name,progress_bar,message_label):
         
 # Function getting computername
 def get_myComputer():
-	computer_name = os.getlogin().upper()
-	return computer_name
+    computer_name = os.getlogin().upper()
+    return computer_name
 
 # Function compare 2 files by reading binary
 def compare_files(file1, file2):

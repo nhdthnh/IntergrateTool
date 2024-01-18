@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import font,ttk,Label
 import os
 from Support_Function import *
+from Personal_GUI import PersonalGUI
 import datetime
 import sys
 import pandas as pd
@@ -50,7 +51,6 @@ USS_KIT                         = os.path.join(USS_CENTRALIZATION_PATH,'USS_KIT'
 
 CONFIG_PATH                     = os.path.join(USS_CENTRALIZATION_PATH,'Config')
 BUTTON_CONFIG_XLSX_PATH         = os.path.join(CONFIG_PATH,'Button_Config.xlsx')
-
 STATE_CONFIG_PATH               = os.path.join(CONFIG_PATH,'State.txt')
 SW_VER = 'SW_1.0'
 # Function hover
@@ -126,6 +126,7 @@ print('User name:   '+get_myComputer())
 root = Tk()
 root.title('USS KIT')
 root.grid_columnconfigure(0,weight=1)
+root.resizable(False, False)
 max_row=0
 max_column=0
 with open(STATE_CONFIG_PATH, 'r') as f:
@@ -143,7 +144,6 @@ sheet_combobox = ttk.Combobox(root, textvariable=sheet_var,state='readonly',widt
 sheet_combobox['values'] = states
 sheet_combobox.grid(row=max_row+2, column=0)
 
-print(max_column,max_row)
 try:
     photo = PhotoImage(file = os.path.join(LOGO_PATH,'logo.png'))
     root.iconphoto(False, photo)
@@ -264,6 +264,12 @@ add_button.bind("<Enter>", on_enter)
 add_button.bind("<Leave>", on_leave) 
 add_button['command'] = open_new_window
 add_button.grid(row=max_row+1,column=0)
+Persional = Button(root,text= 'Persional',relief='raised', borderwidth=5,bg='#ffd166',activebackground='#ffd166', fg='#000',width=10)
+Persional.default_bg = '#ffd166'
+Persional.bind("<Enter>", on_enter) 
+Persional.bind("<Leave>", on_leave) 
+Persional['command'] = PersonalGUI
+Persional.grid(row=max_row,column=0)
 # buttons = df.to_dict('records')
 
 # buttons = [
@@ -289,7 +295,6 @@ add_button.grid(row=max_row+1,column=0)
 #     {'text': 'FAQ', 'row': 3, 'column': 5, 'bg': '#0077b6', 'fg': '#03045e'}
 #     # Add more if needed
 # ]
-
 progress_bar = ttk.Progressbar(root, length=350, mode='indeterminate')
 progress_bar.grid(row=max_row+3, column=1, columnspan=6,padx = 5,sticky='e')
 message_label = Label(root, text="", bg="white", fg="black", font=font.Font(size=12))
