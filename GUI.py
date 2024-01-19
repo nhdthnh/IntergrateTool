@@ -1,3 +1,4 @@
+import win32gui, win32con
 from tkinter import *
 import tkinter as tk
 from tkinter import font,ttk,Label
@@ -9,9 +10,10 @@ import sys
 import pandas as pd
 import threading
 from openpyxl import load_workbook
+
 # Path Config
 USS_CENTRALIZATION_PATH         = r'\\bosch.com\dfsRB\DfsVN\LOC\Hc\RBVH\20_EDA\10_EDA9\01_Internal\10_Tool\00_ToolChain_Template'
-    # Path Logo
+# Path Logo
 LOG_PATH                        = os.path.join(USS_CENTRALIZATION_PATH, 'Log')
 LOGO_PATH                       = os.path.join(USS_CENTRALIZATION_PATH, 'Icon')
 
@@ -53,6 +55,7 @@ CONFIG_PATH                     = os.path.join(USS_CENTRALIZATION_PATH,'Config')
 BUTTON_CONFIG_XLSX_PATH         = os.path.join(CONFIG_PATH,'Button_Config.xlsx')
 STATE_CONFIG_PATH               = os.path.join(CONFIG_PATH,'State.txt')
 SW_VER = 'SW_1.0'
+
 # Function hover
 def on_enter(e):
     # Get current color
@@ -202,7 +205,10 @@ def open_new_window():
     # Create the "Add button" button in the new window
     add_button = Button(new_window, text='Add button', command=lambda: check_password(entries, color_comboboxes,new_window))
     add_button.grid(row=len(fields)+1, column=0, columnspan=2,pady=10)
-
+def openPersonalGUI():
+    Minimize = win32gui.GetForegroundWindow()
+    win32gui.ShowWindow(Minimize, win32con.SW_MINIMIZE)
+    PersonalGUI()
 def check_password(entries, color_comboboxes,new_window):
     # Create a new window for password entry
     password_window = Toplevel(root)
@@ -264,11 +270,11 @@ add_button.bind("<Enter>", on_enter)
 add_button.bind("<Leave>", on_leave) 
 add_button['command'] = open_new_window
 add_button.grid(row=max_row+1,column=0)
-Persional = Button(root,text= 'Persional',relief='raised', borderwidth=5,bg='#ffd166',activebackground='#ffd166', fg='#000',width=10)
+Persional = Button(root,text= 'Personal',relief='raised', borderwidth=5,bg='#ffd166',activebackground='#ffd166', fg='#000',width=10)
 Persional.default_bg = '#ffd166'
 Persional.bind("<Enter>", on_enter) 
 Persional.bind("<Leave>", on_leave) 
-Persional['command'] = PersonalGUI
+Persional['command'] = openPersonalGUI
 Persional.grid(row=max_row,column=0)
 # buttons = df.to_dict('records')
 
@@ -348,7 +354,8 @@ def update_buttons():
             folder_and_link_info = button_folder_and_link[button['text']]
         
             b.config(command=lambda folder_and_link_info=folder_and_link_info, progress_bar=progress_bar: threading.Thread(target=open_folder_and_link, args=(folder_and_link_info['folder_path'], folder_and_link_info['link_path'], progress_bar, message_label)).start())
-    # canvas.config(scrollregion=canvas.bbox('all'))
+    
+    
     root.after_idle(lambda: canvas.config(scrollregion=canvas.bbox('all')))
 root.update()
 sheet_combobox.bind("<<ComboboxSelected>>", lambda _: update_buttons())
