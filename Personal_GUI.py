@@ -71,28 +71,25 @@ def PersonalGUI():
             if selected_button == "Choose Button":
                 messagebox.showwarning("Warning", "Please choose a button.")
             else:
-                # Đọc DataFrame từ file Excel
                 df = pd.read_excel(file_path)
-
-                # Lấy thông tin về nút từ DataFrame dựa trên 'button_name'
                 button_info = df[df['button_name'] == selected_button].iloc[0]
 
                 # Cập nhật nội dung của Label để hiển thị thông tin
                 label_info.config(text=f"Button Name:    {button_info['button_name']}\nPath:    {button_info['path']}\nColor:    {button_info['color']}")
-                # Cập nhật giá trị các Entry để chỉnh sửa
-                entry_button_name.delete(0, tk.END)
-                entry_button_name.insert(0, button_info['button_name'])
-
-                entry_path.delete(0, tk.END)
-                entry_path.insert(0, button_info['path'])
-
-                entry_color.delete(0, tk.END)
-                entry_color.insert(0, button_info['color'])
+                button_color = entry_color.get()            
+                new_button_name = entry_button_name.get()
+                new_button_path = entry_path.get()
+                df.loc[df['button_name'] == selected_button, 'button_name'] = new_button_name
+                df.loc[df['button_name'] == selected_button, 'path'] = new_button_path
+                df.loc[df['button_name'] == selected_button, 'color'] = button_color
+                print(df.loc[df['button_name'] == selected_button, 'color'])
+                df.to_excel(file_path, sheet_name='Sheet1', index=False)
+            
         color_var = tk.StringVar()
         color_var.set("#000000")  
         edit_window = tk.Toplevel()
         edit_window.title("Remove Button")
-        edit_window.geometry("500x400")
+        edit_window.geometry("350x350")
         combo = ttk.Combobox(edit_window, values=df['button_name'].tolist())
         combo.set("Choose Button")
         combo.grid(row=0, column=0, pady=20)
@@ -104,7 +101,7 @@ def PersonalGUI():
         combo.bind("<<ComboboxSelected>>", on_combobox_selected)
         label_info = tk.Label(edit_window, text="")
         label_info.grid(row=1, column=0, pady=10, columnspan=3)
-
+        
         # Tạo Entry cho Button Name
         label_button_name = tk.Label(edit_window, text="Button Name:")
         label_button_name.grid(row=2, column=0, pady=10)
@@ -120,12 +117,12 @@ def PersonalGUI():
         # Tạo Entry cho Color
         label_color = tk.Label(edit_window, text="Color:")
         label_color.grid(row=4, column=0, pady=10)
-        entry_color = tk.Entry(edit_window)
+        entry_color = tk.Entry(edit_window, textvariable=color_var)
         entry_color.grid(row=4, column=4, pady=10)
         label_color_text = tk.Button(edit_window, text="COLOR",command = colorpicker_click)
         label_color_text.grid(row=4, column=6, pady=10)
         # Thêm hàm confirm_edit vào sự kiện của nút "Confirm Edit"
-        confirm_edit_button = tk.Button(edit_window, text="Confirm Edit", command=confirm_edit)
+        confirm_edit_button = tk.Button(edit_window, text="Edit", command=confirm_edit)
         confirm_edit_button.grid(row=5, column=0, pady=20, columnspan=3)
     #CONFIGURE##########################
     def configure():
