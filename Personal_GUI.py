@@ -8,16 +8,20 @@ from tkinter import ttk
 from tkinter import colorchooser
 from tkinter import messagebox
 BUTTON_CONFIG_XLSX_PATH_PERSONAL = os.path.join(os.getcwd(), "share/Button_Config.xlsx")
-
+CONFIGURE                        = os.path.join(os.getcwd(),"share/configure.txt")
 def PersonalGUI():
     file_path = BUTTON_CONFIG_XLSX_PATH_PERSONAL
+    file_txt = CONFIGURE
     df = pd.read_excel(file_path)
-    max_rows = int(df['max_row'].values[0])
-    max_columns = int(df['max_column'].values[0])
-    if df['max_column'].values[0] == None or df['max_row'].values[0] == None:
-        df.at[0, 'max_row'] = 5
-        df.at[0, 'max_column'] = 5
-        df.to_excel(file_path, sheet_name='Sheet1', index=False)
+    with open(file_txt, "r", encoding="utf-8") as file:
+        lines = file.readlines()
+        if len(lines) >= 2:
+            max_rows = int(lines[0].strip())
+            max_columns = int(lines[1].strip()) 
+    # if df['max_column'].values[0] == None or df['max_row'].values[0] == None:
+    #     df.at[0, 'max_row'] = 5
+    #     df.at[0, 'max_column'] = 5
+    #     df.to_excel(file_path, sheet_name='Sheet1', index=False)
     ##ADD#######################
     def add_button_popup():
         def colorpicker_click():
@@ -34,7 +38,7 @@ def PersonalGUI():
                     tk.messagebox.showerror("ERROR", "Color is not supported")
                     popup.mainloop()
                 else:
-                    df.loc[len(df)] = [new_button_name, new_button_path, button_color]
+                    df.loc[len(df)] = [str(new_button_name), str(new_button_path), str(button_color)]
                     df.to_excel(file_path, sheet_name='Sheet1', index=False)
                     update_gui()
                     popup.destroy()
@@ -66,72 +70,78 @@ def PersonalGUI():
         def colorpicker_click():
             c_code = colorchooser.askcolor()[1] 
             color_var.set(c_code)
-        def confirm_edit():
+        def show():
             selected_button = combo.get()
+            
             if selected_button == "Choose Button":
-                messagebox.showwarning("Warning", "Please choose a button.")
+                messagebox.showwarning("Warning", "Please select button")
             else:
                 df = pd.read_excel(file_path)
                 button_info = df[df['button_name'] == selected_button].iloc[0]
-
-                # Cập nhật nội dung của Label để hiển thị thông tin
-                label_info.config(text=f"Button Name:    {button_info['button_name']}\nPath:    {button_info['path']}\nColor:    {button_info['color']}")
-                button_color = entry_color.get()            
+                #label_info.config(text=f"Button Name: {button_info['button_name']}\n Path: {button_info['path']}\nColor: {button_info['color']}")
+                entry_button_name.delete(0, tk.END)
+                entry_path.delete(0, tk.END)
+                entry_color.delete(0, tk.END)
+                entry_button_name.insert(0, button_info["button_name"])
+                entry_path.insert(0, button_info["path"])
+                entry_color.insert(0, button_info["color"])
+        def save():
+            selected_button = combo.get()
+            if selected_button == "Choose Button":
+                messagebox.showwarning("Warning", "Please select button")
+            else:
+                df = pd.read_excel(file_path)
                 new_button_name = entry_button_name.get()
                 new_button_path = entry_path.get()
+                new_button_color = entry_color.get()
+                df.loc[df['button_name'] == selected_button, 'color'] = new_button_color
                 df.loc[df['button_name'] == selected_button, 'button_name'] = new_button_name
                 df.loc[df['button_name'] == selected_button, 'path'] = new_button_path
-                df.loc[df['button_name'] == selected_button, 'color'] = button_color
-                print(df.loc[df['button_name'] == selected_button, 'color'])
-                df.to_excel(file_path, sheet_name='Sheet1', index=False)
-            
+                df.to_excel(file_path)
+                messagebox.showinfo("NOTICE", "Update button successfully")
+                edit_window.destroy()
         color_var = tk.StringVar()
-        color_var.set("#000000")  
+        color_var.set("")  
         edit_window = tk.Toplevel()
-        edit_window.title("Remove Button")
-        edit_window.geometry("350x350")
+        edit_window.title("Edit Button")
+        edit_window.geometry("350x250")
+        edit_window.resizable(False, False)
         combo = ttk.Combobox(edit_window, values=df['button_name'].tolist())
         combo.set("Choose Button")
         combo.grid(row=0, column=0, pady=20)
         def on_combobox_selected(event):
-            confirm_edit()
+            show()
         combo = ttk.Combobox(edit_window, values=df['button_name'].tolist())
         combo.set("Choose Button")
         combo.grid(row=0, column=0, pady=20)
         combo.bind("<<ComboboxSelected>>", on_combobox_selected)
-        label_info = tk.Label(edit_window, text="")
-        label_info.grid(row=1, column=0, pady=10, columnspan=3)
-        
-        # Tạo Entry cho Button Name
         label_button_name = tk.Label(edit_window, text="Button Name:")
-        label_button_name.grid(row=2, column=0, pady=10)
+        label_button_name.grid(row=1, column=0, pady=10)
         entry_button_name = tk.Entry(edit_window)
-        entry_button_name.grid(row=2, column=4, pady=10)
+        entry_button_name.grid(row=1, column=2, pady=10)
 
         # Tạo Entry cho Path
         label_path = tk.Label(edit_window, text="Path:")
-        label_path.grid(row=3, column=0, pady=10)
+        label_path.grid(row=2, column=0, pady=10)
         entry_path = tk.Entry(edit_window)
-        entry_path.grid(row=3, column=4, pady=10)
+        entry_path.grid(row=2, column=2, pady=10)
 
         # Tạo Entry cho Color
         label_color = tk.Label(edit_window, text="Color:")
-        label_color.grid(row=4, column=0, pady=10)
+        label_color.grid(row=3, column=0, pady=10)
         entry_color = tk.Entry(edit_window, textvariable=color_var)
-        entry_color.grid(row=4, column=4, pady=10)
-        label_color_text = tk.Button(edit_window, text="COLOR",command = colorpicker_click)
-        label_color_text.grid(row=4, column=6, pady=10)
-        # Thêm hàm confirm_edit vào sự kiện của nút "Confirm Edit"
-        confirm_edit_button = tk.Button(edit_window, text="Edit", command=confirm_edit)
-        confirm_edit_button.grid(row=5, column=0, pady=20, columnspan=3)
+        entry_color.grid(row=3, column=2, pady=10)
+        button_color_text = tk.Button(edit_window, text="COLOR",command = colorpicker_click)
+        button_color_text.grid(row=3, column=4, pady=10)
+        save_button = tk.Button(edit_window,text = "SAVE",command = save)
+        save_button.grid(row=4, column=0, pady=10)
     #CONFIGURE##########################
     def configure():
         def save():
             max_column_value = entryColumn.get()
             max_row_value = entryRow.get()
-            df.at[0, 'max_row'] = max_row_value
-            df.at[0, 'max_column'] = max_column_value
-            df.to_excel(file_path, sheet_name='Sheet1', index=False)
+            with open(file_txt,'w') as file:
+                file.write(f"{max_row_value}\n{max_column_value}")
             configure.destroy()
         configure = tk.Tk()
         configure.geometry("300x300")
@@ -140,7 +150,7 @@ def PersonalGUI():
         MaxColumnLabel.pack()
         entryColumn = tk.Entry(configure,font="Arial 13")
         entryColumn.pack()
-        MaxRowLabel = tk.Label(configure, text="Max column: ",font= custom_font)
+        MaxRowLabel = tk.Label(configure, text="Max row: ",font= custom_font)
         MaxRowLabel.pack()
         entryRow = tk.Entry(configure, font="Arial 13")
         entryRow.pack()
@@ -152,9 +162,10 @@ def PersonalGUI():
         def confirm_removal():
             selected_button = combo.get()
             messagebox.askquestion("Warning",f"Confirm delete button {selected_button}")
-            df = pd.read_excel(file_path, index_col='button_name')  
+            df = pd.read_excel(file_path, index_col='button_name') 
             df = df.drop(index=selected_button)
             df.to_excel(file_path)
+            print(df)
             remove_window.destroy()
         remove_window = tk.Toplevel()
         remove_window.title("Remove Button")
@@ -172,8 +183,8 @@ def PersonalGUI():
         if os.path.exists(file_path):
             os.startfile(file_path) 
             execution= file_path.split("\\")[-1]
-            last_file_label = tk.Label(left_column_frame, text=f"Open: {execution}", font=custom_font)
-            last_file_label.grid(row=(len(buttons) // max_columns) + 2, column=0, columnspan=max_columns, pady=10)
+            last_file_label = tk.Label(left_column_frame, text=f"Open: {execution}", font="Arial 10")
+            last_file_label.grid(row=8, column=0, pady=10)
             window.after(2000, lambda: last_file_label.config(text=""))
         else:
             messagebox.showerror("Error", "Cannot find the file")
@@ -226,6 +237,8 @@ def PersonalGUI():
     Row.grid(row=5, column=0, padx=10, pady=10)
     Column = tk.Label(left_column_frame, text=f"Max columns: {max_columns}")
     Column.grid(row=6, column=0, padx=10, pady=10)
+    Max_tool = tk.Label(left_column_frame, text=f"Can currently accommodate\n up to {max_columns*max_rows} tools")
+    Max_tool.grid(row=7, column=0, padx=10, pady=10)
     update_gui()
       
     window.mainloop()
