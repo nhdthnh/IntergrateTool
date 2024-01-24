@@ -11,11 +11,12 @@ import webbrowser
 from urllib.parse import urlparse
 
 BUTTON_CONFIG_XLSX_PATH_PERSONAL = os.path.join(os.getcwd(), "share/Button_Config.xlsx")
-CONFIGURE                        = os.path.join(os.getcwd(),"share/configure.txt")
-def PersonalGUI():
 
-    
-    
+file_path = BUTTON_CONFIG_XLSX_PATH_PERSONAL
+
+def PersonalGUI():
+    max_rows = 0
+    max_columns = 0
     def on_enter(e):
     # Get current color
         bg = e.widget['background']
@@ -29,7 +30,6 @@ def PersonalGUI():
     # Function not hover
     def on_leave(e):
         e.widget['background'] = e.widget.default_bg 
-    
     def on_enter_left(e):
     # Get current color
         bg = e.widget['background']
@@ -37,24 +37,12 @@ def PersonalGUI():
         e.widget.config(cursor="hand2")
     def on_leave_left(e):
         e.widget['background'] = '#ffd166'
-    file_path = BUTTON_CONFIG_XLSX_PATH_PERSONAL
-    file_txt = CONFIGURE
     def is_url(text):
         try:
             result = urlparse(text)
             return all([result.scheme, result.netloc])
         except ValueError:
             return False
-    df = pd.read_excel(file_path)
-    with open(file_txt, "r", encoding="utf-8") as file:
-        lines = file.readlines()
-        if len(lines) >= 2:
-            max_rows = int(lines[0].strip())
-            max_columns = int(lines[1].strip()) 
-    # if df['max_column'].values[0] == None or df['max_row'].values[0] == None:
-    #     df.at[0, 'max_row'] = 5
-    #     df.at[0, 'max_column'] = 5
-    #     df.to_excel(file_path, sheet_name='Sheet1', index=False)
     ##ADD#######################
     def add_button_popup():
         def colorpicker_click():
@@ -68,13 +56,13 @@ def PersonalGUI():
         popup = tk.Toplevel(window)
         popup.title("ADD BUTTON")
         def save_button():
+            df = pd.read_excel(file_path)
             new_button_name = entry1.get()
             new_button_path = entry2.get()
             button_color = color_entry.get()
             columns = int(entry_colums.get())
             rows = int(entry_rows.get())
-            print(type(columns))
-            print(type(rows))
+            print(df.columns)
             if new_button_name and new_button_path and button_color and columns and rows:
                 if button_color == "#000000" or button_color == "#ffffff":
                     tk.messagebox.showerror("ERROR", "Color is not supported")
@@ -82,7 +70,6 @@ def PersonalGUI():
                 else:
                     df.loc[len(df)] = [str(new_button_name), str(new_button_path), str(button_color), columns, rows]
                     df.to_excel(file_path, sheet_name='Sheet1', index=False)
-                    update_gui()
                     popup.destroy()
                     messagebox.showinfo("","Add button successfully")
                     window.destroy()
@@ -186,30 +173,6 @@ def PersonalGUI():
         button_color_text.grid(row=3, column=4, pady=10)
         save_button = tk.Button(edit_window,text = "SAVE",command = save)
         save_button.grid(row=4, column=0, pady=10)
-    #CONFIGURE##########################
-    def configure():
-        def save():
-            max_column_value = entryColumn.get()
-            max_row_value = entryRow.get()
-            with open(file_txt,'w') as file:
-                file.write(f"{max_row_value}\n{max_column_value}")
-            configure.destroy()
-            messagebox.showinfo("","Edit window successfully")
-            window.destroy()
-            PersonalGUI()
-        configure = tk.Tk()
-        configure.title("Configure")
-        MaxColumnLabel = tk.Label(configure, text="Max column: ",font= custom_font)
-        MaxColumnLabel.pack()
-        entryColumn = tk.Entry(configure,font="Arial 13")
-        entryColumn.pack()
-        MaxRowLabel = tk.Label(configure, text="Max row: ",font= custom_font)
-        MaxRowLabel.pack()
-        entryRow = tk.Entry(configure, font="Arial 13")
-        entryRow.pack()
-        SaveButton = tk.Button(configure, text="SAVE", command=save,font= "Arial 15")
-        SaveButton.pack()
-        configure.mainloop()
     #REMOVE##################
     def remove_selected_button():
         def confirm_removal():
@@ -263,31 +226,27 @@ def PersonalGUI():
     window.lift()
     window.attributes('-topmost', True)
     window.attributes('-topmost', False)
+    df = pd.read_excel(file_path)
     buttons = df.values.tolist() if not df.empty else []
+    max_rows = max(max_rows, int(df['rows'].max()))
+    max_columns = max(max_columns, int(df['rows'].max()))
     left_column_frame = Canvas(window, width=60,bg="#0d6759",highlightthickness=0,relief='raised', borderwidth=5)
     left_column_frame.grid(row=1, column=0, rowspan=max_rows+1, sticky='nsew')
-    custom_font = font.Font(family="Arial", size=15, weight="bold")
     title = Label(window, text="My Tools", bg="#0d6759", fg="white", font = font.Font(size=13, weight= 'bold'),height= 2, relief='raised', borderwidth=5)
-    title.grid(row=0, column=0, columnspan=max_columns+1,sticky='ew')
-    def update_gui():
+    title.grid(row=0, column=0, columnspan=max_columns*17,sticky='ew')
+    def update_gui(): 
         for i in range(len(buttons)):
-            if i // max_columns >= max_rows:
-                break
-            row = i // max_columns
-            col = i % max_columns
+            row = buttons[i][4]
+            col = buttons[i][3]
             button_value = buttons[i][0] if isinstance(buttons[i], list) else buttons[i]
             button_text = str(button_value)
             button_color = buttons[i][2] if len(buttons[i]) > 2 else "#000000" 
-            # def on_enter(event):
-            #     event.widget.config(bg="white")  
-            #     event.widget.config(cursor="hand2")
-            # def on_leave(event):
-            #     event.widget['background'] = event.widget.default_bg 
+            print(buttons[i][2])
             btn = tk.Button(window, text=button_text, width=15, height=5, command=lambda text=button_text: button_click(text), bg=button_color, font=font.Font(size=13, weight='bold'), relief='raised', borderwidth=5)
             btn.default_bg = button_color
             btn.bind("<Enter>", on_enter)
             btn.bind("<Leave>", on_leave)
-            btn.grid(row= row + 1, column= col + 1) 
+            btn.grid(row= row+1, column= col) 
     
     add_button_left = tk.Button(left_column_frame, text="ADD ", command=add_button_popup, relief='raised', borderwidth=5,bg='#ffd166',activebackground='#ffd166', fg='#000',width=10)
     add_button_left.grid(row=0, column=0, padx=10, pady=10)
@@ -295,16 +254,8 @@ def PersonalGUI():
     remove_button_left.grid(row=1, column=0, padx=10, pady=10)
     #refresh_button_left = tk.Button(left_column_frame, text="REFRESH", command=refesh)
     #refresh_button_left.grid(row=2, column=0, padx=10, pady=10)
-    config = tk.Button(left_column_frame, text="CONFIGURE", command=configure, relief='raised', borderwidth=5,bg='#ffd166',activebackground='#ffd166', fg='#000',width=10)
-    config.grid(row=3, column=0, padx=10, pady=10)
     edit_button = tk.Button(left_column_frame, text="EDIT BUTTON",command = edit, relief='raised', borderwidth=5,bg='#ffd166',activebackground='#ffd166', fg='#000',width=10)
     edit_button.grid(row=4, column=0, padx=10, pady=10)
-    Row = tk.Label(left_column_frame, text=f"Max rows: {max_rows}", bg = '#0d6759',fg='white')
-    Row.grid(row=5, column=0, padx=10, pady=10)
-    Column = tk.Label(left_column_frame, text=f"Max columns: {max_columns}", bg = '#0d6759',fg='white')
-    Column.grid(row=6, column=0, padx=10, pady=10)
-    Max_tool = tk.Label(left_column_frame, text=f"Can currently accommodate\n up to {max_columns*max_rows} tools", bg = '#0d6759',fg='white')
-    Max_tool.grid(row=7, column=0, padx=10, pady=10)
     add_button_left.bind("<Enter>", on_enter_left)
     add_button_left.bind("<Leave>", on_leave_left)
     remove_button_left.bind("<Enter>", on_enter_left)
@@ -313,7 +264,6 @@ def PersonalGUI():
     edit_button.bind("<Leave>", on_leave_left)
     add_button_left.bind("<Enter>", on_enter_left)
     add_button_left.bind("<Leave>", on_leave_left)
-    config.bind("<Enter>", on_enter_left)
-    config.bind("<Leave>", on_leave_left)
     update_gui()   
     window.mainloop()
+PersonalGUI()

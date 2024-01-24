@@ -6,9 +6,6 @@ import time
 from pywinauto import Application
 from tkinter import filedialog
 # Function opening link
-def askdictionary():
-    filename = filedialog.askdirectory()
-    return filename
 def open_link(PATH, progress_bar, message_label):
     button_name = PATH.split('\\')[-2].split('.')[-1]
     progress_bar.start()
