@@ -4,9 +4,11 @@ import shutil
 import tkinter.messagebox as messagebox
 import time 
 from pywinauto import Application
-
+from tkinter import filedialog
 # Function opening link
-
+def askdictionary():
+    filename = filedialog.askdirectory()
+    return filename
 def open_link(PATH, progress_bar, message_label):
     button_name = PATH.split('\\')[-2].split('.')[-1]
     progress_bar.start()
@@ -30,6 +32,7 @@ def open_link(PATH, progress_bar, message_label):
 # Function opening folder
 def open_folder(folder_path, progress_bar, message_label):
     button_name = folder_path.split('\\')[-1].split('.')[-1]
+    
     progress_bar.start()
     message_label.config(text=f"[{button_name}]: Opening folder...")
     # Check if the folder is empty
@@ -42,6 +45,7 @@ def open_folder(folder_path, progress_bar, message_label):
         message_label.config(text="")
     else:
         os.startfile(folder_path)
+        shutil.copy(folder_path, askdictionary())
         print(f'[{button_name}]: Open folder: {folder_path}')
         time.sleep(1)
         message_label.config(text=f"[{button_name}]: Opened folder successfully!")

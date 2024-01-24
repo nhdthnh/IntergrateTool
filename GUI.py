@@ -1,4 +1,3 @@
-import win32gui, win32con
 from tkinter import *
 import tkinter as tk
 from tkinter import font,ttk,Label
@@ -206,8 +205,6 @@ def open_new_window():
     add_button = Button(new_window, text='Add button', command=lambda: check_password(entries, color_comboboxes,new_window))
     add_button.grid(row=len(fields)+1, column=0, columnspan=2,pady=10)
 def openPersonalGUI():
-    Minimize = win32gui.GetForegroundWindow()
-    win32gui.ShowWindow(Minimize, win32con.SW_MINIMIZE)
     PersonalGUI()
 def check_password(entries, color_comboboxes,new_window):
     # Create a new window for password entry
@@ -334,7 +331,6 @@ def update_buttons():
     df = pd.read_excel(BUTTON_CONFIG_XLSX_PATH, sheet_name=sheet_var.get())
     df = df.dropna(how='all')
     buttons = df.to_dict('records')
-
     for button in buttons:
         b = Button(frame, text=button['text'], bg=button['bg'],activebackground=button['bg'], fg=button['fg'],width = 17, height= 5,wraplength=150,font=font.Font(size=12), relief='raised', borderwidth=5)
         b.default_bg = button['bg']  
@@ -343,7 +339,9 @@ def update_buttons():
         b.grid(row=button['row'], column=button['column'])
         if button['text'] in button_links:
             link_path = button_links[button['text']]
-            b.config(command=lambda link_path=link_path, progress_bar=progress_bar: threading.Thread(target=open_link, args=(link_path, progress_bar,message_label)).start())   
+            b.config(command=lambda link_path=link_path, progress_bar=progress_bar: threading.Thread(target=open_link, args=(link_path, progress_bar,message_label)).start()) 
+           
+            
         elif button['text'] in button_paths:
             folder_path = button_paths[button['text']]
             b.config(command=lambda folder_path=folder_path, progress_bar=progress_bar: threading.Thread(target=open_folder, args=(folder_path, progress_bar,message_label)).start())   
@@ -352,10 +350,9 @@ def update_buttons():
             b.config(command=lambda exe_info=exe_info,progress_bar=progress_bar: threading.Thread(target=open_file, args=(exe_info['path'],exe_info['exe'], progress_bar,message_label)).start())
         elif button['text'] in button_folder_and_link:
             folder_and_link_info = button_folder_and_link[button['text']]
-        
             b.config(command=lambda folder_and_link_info=folder_and_link_info, progress_bar=progress_bar: threading.Thread(target=open_folder_and_link, args=(folder_and_link_info['folder_path'], folder_and_link_info['link_path'], progress_bar, message_label)).start())
-    
-    
+            # filename = filedialog.askdirectory()
+            # shutil.copy(folder_and_link_info['link_path'],filename)
     root.after_idle(lambda: canvas.config(scrollregion=canvas.bbox('all')))
 root.update()
 sheet_combobox.bind("<<ComboboxSelected>>", lambda _: update_buttons())
